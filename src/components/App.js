@@ -8,6 +8,8 @@ import LoginPage from "./LoginPage";
 import Home from "./Home";
 import Questions from "./Questions";
 import NewQuestion from "./NewQuestion";
+import LeaderBoard from "./LeaderBoard";
+import QuestionPage from "./QuestionPage";
 
 function App({ dispatch, loading }) {
   useEffect(() => {
@@ -21,6 +23,9 @@ function App({ dispatch, loading }) {
         <Navbar />
         <div className="container">
           <Route path="/" exact component={Home} />
+          <Route path="/leaderboard" exact component={LeaderBoard} />
+          <Route path="/question/:id" exact component={QuestionPage} />
+
           {loading ? (
             <Route path="/login" exact component={LoginPage} />
           ) : (
