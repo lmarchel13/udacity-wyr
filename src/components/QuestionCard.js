@@ -2,32 +2,37 @@ import React, { useState } from "react";
 import Avatar from "react-avatar";
 import { connect } from "react-redux";
 import { useHistory } from "react-router-dom";
+import { handleAddUserAnswer } from "../actions/users";
 
 import { getAvatarByName } from "../utils";
-import { setQuestionAnswer } from "../actions/questions";
-import { setUserAnswer } from "../actions/users";
 
 const OPTIONS = { ONE: "optionOne", TWO: "optionTwo" };
 
-const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOptions }) => {
+const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOptions, answered = {} }) => {
   const [selectedOption, setSelectedOption] = useState(null);
-
   const avatar = getAvatarByName(user);
   const history = useHistory();
+
+  const isQuestionAnswered = answered.optionOne || answered.optionTwo;
+
+  console.log("QuestionCard", { isQuestionAnswered, answered });
 
   const handleClick = (e) => {
     e.preventDefault();
     history.push(`/question/${question.id}`);
   };
 
+  const handleSelectOption = (option) => {
+    if (!isQuestionAnswered) setSelectedOption(option);
+  };
+
   const submitVote = (e) => {
     e.preventDefault();
 
     if (selectedOption) {
-      const payload = { authedUser, question, selectedOption };
-      dispatch(setQuestionAnswer(payload));
-      dispatch(setUserAnswer(payload));
-      history.push(`/`);
+      const payload = { authedUser, qid: question.id, answer: selectedOption };
+
+      dispatch(handleAddUserAnswer(payload)).then(() => history.push("/"));
     }
   };
 
@@ -68,11 +73,14 @@ const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOpti
                 }}
               >
                 <div
-                  onClick={() => setSelectedOption(OPTIONS.ONE)}
+                  onClick={() => handleSelectOption(OPTIONS.ONE)}
                   className="mr-1 text-center"
                   style={{
                     flex: 1,
-                    border: selectedOption === OPTIONS.ONE ? "2px solid green" : "1px solid lightgrey",
+                    border:
+                      selectedOption === OPTIONS.ONE || answered.optionOne
+                        ? "2px solid lightgreen"
+                        : "1px solid lightgrey",
                     display: "flex",
                     alignSelf: "center",
                     justifyContent: "center",
@@ -81,11 +89,14 @@ const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOpti
                   <p>{question.optionOne.text}</p>
                 </div>
                 <div
-                  onClick={() => setSelectedOption(OPTIONS.TWO)}
+                  onClick={() => handleSelectOption(OPTIONS.TWO)}
                   className="ml-1 text-center"
                   style={{
                     flex: 1,
-                    border: selectedOption === OPTIONS.TWO ? "2px solid green" : "1px solid lightgrey",
+                    border:
+                      selectedOption === OPTIONS.TWO || answered.optionTwo
+                        ? "2px solid lightgreen"
+                        : "1px solid lightgrey",
                     display: "flex",
                     alignSelf: "center",
                     justifyContent: "center",
@@ -94,13 +105,15 @@ const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOpti
                   <p>{question.optionTwo.text}</p>
                 </div>
               </div>
-              <button
-                onClick={submitVote}
-                style={{ width: "70%", margin: "0 auto" }}
-                className="btn btn-primary btn-sm"
-              >
-                Vote
-              </button>
+              {isQuestionAnswered ? null : (
+                <button
+                  onClick={submitVote}
+                  style={{ width: "70%", margin: "0 auto" }}
+                  className="btn btn-primary btn-sm"
+                >
+                  Vote
+                </button>
+              )}
             </div>
           ) : (
             <button style={{ width: "50%" }} className="btn btn-outline-primary btn-sm" onClick={handleClick}>
@@ -113,9 +126,23 @@ const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOpti
   );
 };
 
-const mapStateToProps = ({ dispatch, authedUser, users }, { question = {}, showOptions }) => {
+const mapStateToProps = ({ dispatch, authedUser, users = {}, questions = {} }, { questionId, showOptions }) => {
+  const question = questions[questionId];
   const user = users[question.author];
-  return { dispatch, authedUser, user, question, showOptions };
+
+  console.log("question :>> ", question);
+
+  const answered = {
+    optionOne: false,
+    optionTwo: false,
+  };
+
+  const { optionOne, optionTwo } = question;
+
+  if (optionOne && optionOne.votes.includes(authedUser)) answered.optionOne = true;
+  if (optionTwo && optionTwo.votes.includes(authedUser)) answered.optionTwo = true;
+
+  return { dispatch, authedUser, user, question, showOptions, answered };
 };
 
 export default connect(mapStateToProps)(QuestionCard);

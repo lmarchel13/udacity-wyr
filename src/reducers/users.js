@@ -1,6 +1,4 @@
-import { RECEIVE_USERS, SET_USER_ANSWER, ADD_USER_QUESTION } from "../actions/users";
-
-import { saveAnswer } from "../utils/api";
+import { RECEIVE_USERS, ADD_USER_QUESTION, ADD_USER_ANSWER } from "../actions/users";
 
 export default (state = {}, action) => {
   switch (action.type) {
@@ -9,15 +7,22 @@ export default (state = {}, action) => {
         ...state,
         ...action.users,
       };
-    case SET_USER_ANSWER:
-      const { authedUser, question, selectedOption } = action;
-      saveAnswer({ authedUser, qid: question.id, answer: selectedOption });
-
-      return state;
     case ADD_USER_QUESTION:
       const { id, author } = action.question;
-      console.log({ id, author, state });
       return { ...state, [author]: { ...state[author], questions: [...state[author].questions, id] } };
+    case ADD_USER_ANSWER:
+      const { authedUser, qid, answer } = action;
+
+      return {
+        ...state,
+        [authedUser]: {
+          ...state[authedUser],
+          answers: {
+            ...state[authedUser].answers,
+            [qid]: answer,
+          },
+        },
+      };
     default:
       return state;
   }

@@ -8,13 +8,13 @@ const titleStyle = { textAlign: "center", marginTop: 5 };
 const TABS = { ANSWERED: "ANSWERED", UNANSWERED: "UNANSWERED" };
 const defaultClass = "nav-item nav-link mr-1";
 
-const Home = ({ authedUser, user, answeredQuestions, unansweredQuestions }) => {
+const Home = ({ authedUser, user, answeredQuestions, unansweredQuestions, loading }) => {
   const [tab, setTab] = useState(TABS.UNANSWERED);
   const title = user ? <h1 style={titleStyle}>Welcome, {user.name}</h1> : <h1 style={titleStyle}>Home</h1>;
 
-  return (
+  return !loading ? (
     <Fragment>
-      {authedUser ? (
+      {authedUser && user ? (
         <Fragment>
           {title}
           <div className="mt-4" style={{ width: "50%", margin: "0 auto" }}>
@@ -34,9 +34,9 @@ const Home = ({ authedUser, user, answeredQuestions, unansweredQuestions }) => {
             </nav>
             <div style={{ display: "flex", flexDirection: "column" }}>
               {tab === TABS.ANSWERED &&
-                answeredQuestions.map((question) => <QuestionCard key={question.id} question={question} />)}
+                answeredQuestions.map((question) => <QuestionCard key={question.id} questionId={question.id} />)}
               {tab === TABS.UNANSWERED &&
-                unansweredQuestions.map((question) => <QuestionCard key={question.id} question={question} />)}
+                unansweredQuestions.map((question) => <QuestionCard key={question.id} questionId={question.id} />)}
             </div>
           </div>
         </Fragment>
@@ -49,10 +49,10 @@ const Home = ({ authedUser, user, answeredQuestions, unansweredQuestions }) => {
         </div>
       )}
     </Fragment>
-  );
+  ) : null;
 };
 
-const mapStateToProps = ({ users = {}, authedUser, questions = {} }) => {
+const mapStateToProps = ({ users = {}, authedUser, questions = {}, loading }) => {
   const answeredQuestions = [];
   const unansweredQuestions = [];
 
@@ -68,7 +68,7 @@ const mapStateToProps = ({ users = {}, authedUser, questions = {} }) => {
     unansweredQuestions.sort((a, b) => b.timestamp - a.timestamp);
   }
 
-  return { authedUser, user, answeredQuestions, unansweredQuestions };
+  return { authedUser, user, answeredQuestions, unansweredQuestions, loading };
 };
 
 export default connect(mapStateToProps)(Home);

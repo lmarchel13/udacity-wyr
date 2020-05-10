@@ -1,16 +1,19 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
+import { useHistory } from "react-router-dom";
+
 import { handleAddQuestion } from "../actions/questions";
 
 const NewQuestion = ({ dispatch, authedUser }) => {
   const [optionOneText, setOptionOneText] = useState("");
   const [optionTwoText, setOptionTwoText] = useState("");
+  const history = useHistory();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!optionOneText || !optionTwoText) return;
 
-    dispatch(handleAddQuestion({ author: authedUser, optionOneText, optionTwoText }));
+    dispatch(handleAddQuestion({ author: authedUser, optionOneText, optionTwoText })).then(() => history.push("/"));
   };
 
   return !authedUser ? (
