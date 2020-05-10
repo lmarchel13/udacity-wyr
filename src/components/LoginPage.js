@@ -37,15 +37,15 @@ const LoginPage = ({ users = [], dispatch }) => {
         boxShadow: "2.5px 2.5px 2.5px lightgrey",
       }}
     >
-      <form class="form-signin">
+      <form className="form-signin">
         <div style={{ marginLeft: "32.5%" }}>
           <Avatar round={true} value={avatar} />
         </div>
-        <h1 class="h3 mt-3 mb-3 font-weight-normal text-center">Please sign in</h1>
+        <h1 className="h3 mt-3 mb-3 font-weight-normal text-center">Please sign in</h1>
 
         <div style={{ width: "70%", margin: "0 auto" }}>
-          <select class="custom-select" onChange={onChange}>
-            <option selected>Select an user</option>
+          <select className="custom-select" onChange={onChange} value={undefined}>
+            <option value={undefined}>Select an user</option>
             {Object.values(users).map((user) => {
               return (
                 <option key={user.id} value={user.id}>
@@ -58,7 +58,7 @@ const LoginPage = ({ users = [], dispatch }) => {
         <button
           disabled={!user}
           style={{ width: "30%", margin: "0 auto" }}
-          class="mt-3 btn btn-sm btn-primary btn-block"
+          className="mt-3 btn btn-sm btn-primary btn-block"
           onClick={onSubmit}
         >
           Sign in

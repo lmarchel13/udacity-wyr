@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState, Fragment } from "react";
 import { connect } from "react-redux";
@@ -51,7 +52,7 @@ const Home = ({ authedUser, user, answeredQuestions, unansweredQuestions }) => {
   );
 };
 
-const mapStateToProps = ({ users = {}, authedUser, questions }) => {
+const mapStateToProps = ({ users = {}, authedUser, questions = {} }) => {
   const answeredQuestions = [];
   const unansweredQuestions = [];
 
