@@ -5,7 +5,7 @@ You can create questions, answered questions from other users and check who is l
 
 ### To install:
 
-`yarn install`
+`yarn`
 
 ### To run in development mode:
 
