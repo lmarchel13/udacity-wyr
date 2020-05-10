@@ -31,7 +31,7 @@ function App({ dispatch, loading }) {
           ) : (
             <div>
               <Route path="/questions" exact component={Questions} />
-              <Route path="/new-question" exact component={NewQuestion} />
+              <Route path="/add" exact component={NewQuestion} />
             </div>
           )}
         </div>

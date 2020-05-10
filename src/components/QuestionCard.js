@@ -7,15 +7,25 @@ import { handleAddUserAnswer } from "../actions/users";
 import { getAvatarByName } from "../utils";
 
 const OPTIONS = { ONE: "optionOne", TWO: "optionTwo" };
+const SELECTED_OPTION_STYLE = "3px solid lightgreen";
+const DEFAULT_OPTION_STYLE = "1px solid lightgrey";
 
-const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOptions, answered = {} }) => {
+const QuestionCard = ({ loading, dispatch, authedUser, users = {}, questions, questionId, showOptions }) => {
   const [selectedOption, setSelectedOption] = useState(null);
-  const avatar = getAvatarByName(user);
   const history = useHistory();
+  const answered = { optionOne: false, optionTwo: false };
+
+  const question = questions[questionId] || {};
+  const user = users[question.author] || {};
+
+  const { optionOne, optionTwo } = question;
+
+  if (optionOne && optionOne.votes.includes(authedUser)) answered.optionOne = true;
+  if (optionTwo && optionTwo.votes.includes(authedUser)) answered.optionTwo = true;
+
+  const avatar = getAvatarByName(user);
 
   const isQuestionAnswered = answered.optionOne || answered.optionTwo;
-
-  console.log("QuestionCard", { isQuestionAnswered, answered });
 
   const handleClick = (e) => {
     e.preventDefault();
@@ -36,19 +46,34 @@ const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOpti
     }
   };
 
-  return (
+  const getVotesInfo = (optionOne = {}, optionTwo = {}) => {
+    if (Object.keys(optionOne).length === 0 || Object.keys(optionTwo).length === 0) return {};
+    const votesOptionOne = optionOne.votes.length;
+    const votesOptionTwo = optionTwo.votes.length;
+    const totalVotes = votesOptionOne + votesOptionTwo;
+
+    return { totalVotes, votesOptionOne, votesOptionTwo };
+  };
+
+  const { totalVotes, votesOptionOne = 0, votesOptionTwo = 0 } = getVotesInfo(optionOne, optionTwo);
+  const optionOnePercentage = Math.round((votesOptionOne * 100) / totalVotes) || 0;
+  const optionTwoPercentage = Math.round((votesOptionTwo * 100) / totalVotes) || 0;
+
+  const isNotReady = loading || (Object.keys(question).length === 0 && Object.keys(user).length === 0);
+
+  return isNotReady ? null : (
     <div
       className="card mb-3"
       style={{
         minHeight: 150,
-        maxHeight: 200,
+        maxHeight: 300,
         display: "flex",
         flexDirection: "column",
         padding: 20,
       }}
     >
       <div style={{ flex: 1 }}>
-        <h5 className="text-center">Asked by {user.name}</h5>
+        <h5 className="text-center mb-3">Asked by {user.name}</h5>
       </div>
       <div style={{ display: "flex", flex: 3, flexDirection: "row" }}>
         <div style={{ display: "flex", alignSelf: "center", justifyContent: "center", flex: 1 }}>
@@ -63,53 +88,86 @@ const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOpti
           }}
         >
           {showOptions ? (
-            <div style={{ display: "flex", flexDirection: "column", width: "80%" }}>
-              <div
-                className="mb-2"
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
+            <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+              <div className="mb-2" style={{ display: "flex", flexDirection: "column", width: "100%" }}>
                 <div
                   onClick={() => handleSelectOption(OPTIONS.ONE)}
-                  className="mr-1 text-center"
+                  className="mb-1 text-center"
                   style={{
                     flex: 1,
                     border:
                       selectedOption === OPTIONS.ONE || answered.optionOne
-                        ? "2px solid lightgreen"
-                        : "1px solid lightgrey",
+                        ? SELECTED_OPTION_STYLE
+                        : DEFAULT_OPTION_STYLE,
                     display: "flex",
                     alignSelf: "center",
                     justifyContent: "center",
+                    width: "80%",
+                    position: "relative",
+                    flexDirection: "column",
                   }}
                 >
-                  <p>{question.optionOne.text}</p>
+                  <p>{question && question.optionOne && question.optionOne.text}</p>
+                  <div className="progress mt-2 mb-2" style={{ width: "70%", margin: "0 auto" }}>
+                    <div
+                      className="progress-bar"
+                      role="progressbar"
+                      style={{ width: `${optionOnePercentage}%` }}
+                      aria-valuenow={optionOnePercentage}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      {optionOnePercentage} %
+                    </div>
+                  </div>
+                  {isQuestionAnswered ? (
+                    <span className="badge badge-primary" style={{ position: "absolute", top: -5, right: -30 }}>
+                      {votesOptionOne}/{totalVotes} votes
+                    </span>
+                  ) : null}
                 </div>
                 <div
                   onClick={() => handleSelectOption(OPTIONS.TWO)}
-                  className="ml-1 text-center"
+                  className="mt-1 text-center"
                   style={{
                     flex: 1,
                     border:
                       selectedOption === OPTIONS.TWO || answered.optionTwo
-                        ? "2px solid lightgreen"
-                        : "1px solid lightgrey",
+                        ? SELECTED_OPTION_STYLE
+                        : DEFAULT_OPTION_STYLE,
                     display: "flex",
+                    flexDirection: "column",
                     alignSelf: "center",
                     justifyContent: "center",
+                    width: "80%",
+                    position: "relative",
                   }}
                 >
-                  <p>{question.optionTwo.text}</p>
+                  <p style={{ flex: 1 }}>{question && question.optionTwo && question.optionTwo.text}</p>
+                  <div className="progress mt-2 mb-2" style={{ width: "70%", margin: "0 auto" }}>
+                    <div
+                      className="progress-bar"
+                      role="progressbar"
+                      style={{ width: `${optionTwoPercentage}%` }}
+                      aria-valuenow={optionTwoPercentage}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      {optionTwoPercentage} %
+                    </div>
+                  </div>
+                  {isQuestionAnswered ? (
+                    <span className="badge badge-primary" style={{ position: "absolute", top: -5, right: -30 }}>
+                      {votesOptionTwo}/{totalVotes} votes
+                    </span>
+                  ) : null}
                 </div>
               </div>
               {isQuestionAnswered ? null : (
                 <button
                   onClick={submitVote}
                   style={{ width: "70%", margin: "0 auto" }}
-                  className="btn btn-primary btn-sm"
+                  className="btn btn-primary btn-sm mt-1"
                 >
                   Vote
                 </button>
@@ -126,23 +184,16 @@ const QuestionCard = ({ dispatch, authedUser, user = {}, question = {}, showOpti
   );
 };
 
-const mapStateToProps = ({ dispatch, authedUser, users = {}, questions = {} }, { questionId, showOptions }) => {
-  const question = questions[questionId];
-  const user = users[question.author];
-
-  console.log("question :>> ", question);
-
-  const answered = {
-    optionOne: false,
-    optionTwo: false,
+const mapStateToProps = ({ dispatch, authedUser, users, questions, loading }, { questionId, showOptions }) => {
+  return {
+    dispatch,
+    authedUser,
+    users,
+    showOptions,
+    loading: !authedUser,
+    questionId,
+    questions,
   };
-
-  const { optionOne, optionTwo } = question;
-
-  if (optionOne && optionOne.votes.includes(authedUser)) answered.optionOne = true;
-  if (optionTwo && optionTwo.votes.includes(authedUser)) answered.optionTwo = true;
-
-  return { dispatch, authedUser, user, question, showOptions, answered };
 };
 
 export default connect(mapStateToProps)(QuestionCard);

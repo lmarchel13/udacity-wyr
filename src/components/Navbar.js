@@ -24,7 +24,7 @@ const Navbar = ({ authedUser, dispatch }) => {
         {authedUser ? (
           <Fragment>
             <li className="nav-item mr-3">
-              <NavLink className="nav-link" to="/new-question" exact activeClassName="active">
+              <NavLink className="nav-link" to="/add" exact activeClassName="active">
                 New Question
               </NavLink>
             </li>
@@ -34,7 +34,7 @@ const Navbar = ({ authedUser, dispatch }) => {
               </NavLink>
             </li>
             <li className="nav-item mr-3">
-              <NavLink className="nav-link" to="/" onClick={handleLogout}>
+              <NavLink className="nav-link" to="/" onClick={handleLogout} activeClassName="active">
                 Logout
               </NavLink>
             </li>
